@@ -13,6 +13,9 @@ declare const process: NodeJS.Process & {
 // 開発環境かどうかのフラグ
 const isDev = process.env.NODE_ENV == "development";
 
+// バージョン情報
+const VERSION = "0.2.0";
+
 class Main{
     private workDir = process.pkg ? path.dirname(process.execPath) : path.resolve(process.cwd(), isDev ? "test" : "");
     private execName = path.basename(process.execPath);
@@ -29,8 +32,8 @@ class Main{
     constructor(){
         this.spinner.setSpinnerString(25);                              // スピナーの種類
         console.clear();
-        console.log(emoji.get(":pushpin:"),"AutoNum - Auto Prefix Adder v0.2.0");
-        console.log(clc.blackBright("\tmade with ") + clc.red("♥︎") + " by Bistalink\n");
+        console.log(emoji.get(":pushpin:"),"Prefixer - Auto Prefix Adder for files v" + VERSION);
+        console.log(clc.blackBright("\tMade with ") + clc.red("♥︎") + " by Bistalink. MIT License.\n");
         console.log(clc.blackBright("Working Directory:\t"), this.workDir);
         console.log(clc.blackBright("Executable name:\t"), this.execName);
         console.log();
