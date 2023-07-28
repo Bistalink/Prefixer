@@ -1,12 +1,21 @@
 # Prefixer - Auto prefix adding tool
 
+[![Image from Gyazo](https://i.gyazo.com/f43f1b13222ebd2501cb420d18dae0bd.png)](https://gyazo.com/f43f1b13222ebd2501cb420d18dae0bd)
+
 ## Overview
 Prefixer is a tool that automatically adds prefix to files. It would be helpful when you want to do numbering multiple files at the same time, or you can even save files one by one while this tool automatically rename your saved file with numbered prefix in the background.
 
 This tool is powered by Node.js Javascript Runtime and packaged using pkg.
 
 ### Installation
-See the release tab and download the right one for your platform. Currently supporting Windows and macOS.
+Download the right one from below:
+#### Latest
+|Platform|Download Link|  
+|---|---|
+|Windows|[Prefixer-v0.2.0win.zip](https://github.com/Bistalink/Prefixer/releases/download/v0.2.0/Prefixer-v0.2.0win.zip)|
+|macOS|[Prefixer-v0.2.0macos.zip](https://github.com/Bistalink/Prefixer/releases/download/v0.2.0/Prefixer-v0.2.0macos.zip)|
+
+Or, see the release tab and download the right one for your platform. Currently supporting Windows and macOS.
 
 ### Basic Usage
 1. Place binary (Prefixer-win.exe or Prefixer-macos) just inside the folder which contains files you want to do numbering.
