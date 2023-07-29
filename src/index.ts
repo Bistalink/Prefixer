@@ -125,12 +125,21 @@ class Main{
 
     // ファイルのリストを取得するやつ（フォルダには反応しないやつ）
     getFileList(filePath: string): string[]{
-        // 対象がファイルでかつ実行可能ファイルでない場合
+        // 対象がファイルでかつ無視すべきファイルでない（リネームしてもよい）ファイルを抽出
         return fs.readdirSync(filePath, {withFileTypes: true}).filter(dirent =>{
-            return dirent.isFile() && dirent.name != this.execName;
+            return dirent.isFile() && !this.shouldIgnore(dirent.name)
         }).map(dirent => {
             return dirent.name;
         })
+    }
+
+    // 無視するべきファイル（リネーム対象外のファイル）かどうかを判別する
+    shouldIgnore(fileName: string){
+        // 無視すべきファイルのときはtrueを返す。orでつなぐ
+        return (
+            fileName == this.execName ||    // 実行ファイルは対象外
+            fileName == ".DS_Store"         // macOSの.DS_Storeファイルは対象外
+        )
     }
 }
 
