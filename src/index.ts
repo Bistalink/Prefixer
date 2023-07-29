@@ -18,7 +18,7 @@ const VERSION = "0.2.0";
 
 class Main{
     private workDir = process.pkg ? path.dirname(process.execPath) : path.resolve(process.cwd(), isDev ? "test" : "");
-    private execName = path.basename(process.execPath);
+    private selfName = path.basename(process.execPath);
     private regEx = /^[0-9]{3}_/;                               // 正規表現。最初の数字3桁があるかどうか
     private updateRate = 1000;                                      // 更新間隔（ミリ秒）
     private fileList: string[] = [];
@@ -35,7 +35,7 @@ class Main{
         console.log(emoji.get(":pushpin:"),"Prefixer - Auto Prefix Adder for files v" + VERSION);
         console.log(clc.blackBright("\tMade with ") + clc.red("♥︎") + " by Bistalink. MIT License.\n");
         console.log(clc.blackBright("Working Directory:\t"), this.workDir);
-        console.log(clc.blackBright("Executable name:\t"), this.execName);
+        console.log(clc.blackBright("Executable name:\t"), this.selfName);
         console.log();
         console.log("Target Expression:\t", this.regEx);
         console.log(`\n----------\nPress ${clc.redBright("Ctrl + C")} or ${clc.redBright("close console window")} to quit\n----------`);
@@ -137,7 +137,7 @@ class Main{
     shouldIgnore(fileName: string){
         // 無視すべきファイルのときはtrueを返す。orでつなぐ
         return (
-            fileName == this.execName ||    // 実行ファイルは対象外
+            fileName == this.selfName ||    // Prefixer自体の実行ファイルは対象外
             fileName == ".DS_Store"         // macOSの.DS_Storeファイルは対象外
         )
     }
