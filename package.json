@@ -4,7 +4,7 @@
   "description": "Auto prefix adder for files",
   "main": "dist/index.js",
   "scripts": {
-    "build": "esbuild src/index.ts --bundle --outfile=dist/index.js --platform=node",
+    "build": "esbuild src/index.ts --bundle --minify --outfile=dist/index.js --platform=node",
     "test": "run-p clean && run-p build && cross-env NODE_ENV=development node .",
     "clean": "rimraf dist && rimraf release",
     "package": "run-p clean && cross-env NODE_ENV=production run-p build && pkg -t node18-win,node18-macos -o release/Prefixer dist/index.js",

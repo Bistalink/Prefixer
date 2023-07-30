@@ -11,30 +11,74 @@ declare const process: NodeJS.Process & {
   pkg: boolean | undefined;
 };
 
-// 開発環境かどうかのフラグ
 const isDev = process.env.NODE_ENV == "development";
 
-// バージョン情報
 const VERSION = "0.2.1";
 
+/**
+ * エントリポイントとなるメインの関数。
+ */
 class Main {
-  private readonly workDir = process.pkg
-    ? path.dirname(process.execPath)
-    : path.resolve(process.cwd(), isDev ? "test" : "");
-  private readonly selfName = path.basename(process.execPath);
-  private readonly regEx = /^[0-9]{3}_/; // 正規表現。最初の数字3桁があるかどうか
-  private readonly updateRate = 1000; // 更新間隔（ミリ秒）
-  private targetFiles: string[] = [];
-  private unProcessed: string[] = [];
-  private processed: string[] = [];
-  private latestPrefix: number = 0;
-  private readonly spinner = new Spinner(
-    clc.cyan("Watching for file changes..."),
-  ); // ファイル変更監視中のスピナー
+  /**
+   * 作業ディレクトリ
+   */
+  private readonly workDir: string;
+
+  /**
+   * Prefixer自体の実行ファイル名
+   */
+  private readonly selfName: string;
+
+  /**
+   * 正規表現
+   */
+  private readonly regEx: RegExp;
+
+  /**
+   * ファイルを監視する間隔
+   */
+  private readonly updateRate: number;
+
+  /**
+   * 監視の対象となるファイル群
+   */
+  private targetFiles: string[];
+
+  /**
+   * プレフィックスが付与されていないファイル
+   */
+  private unProcessed: string[];
+
+  /**
+   * プレフィックスが付与されているファイル
+   */
+  private processed: string[];
+
+  /**
+   * 最新のプレフィックス番号
+   */
+  private latestPrefix: number;
+
+  /**
+   * 監視中を表すスピナーアニメーション
+   */
+  private readonly loadingSpinner: Spinner;
 
   // コンストラクタ
   constructor() {
-    this.spinner.setSpinnerString(25); // スピナーの種類
+    this.workDir = process.pkg
+      ? path.dirname(process.execPath)
+      : path.resolve(process.cwd(), isDev ? "test" : "");
+    this.selfName = path.basename(process.execPath);
+    this.regEx = /^[0-9]{3}_/;
+    this.updateRate = 1000; // 更新間隔は1秒ごとをデフォルトにする
+    this.targetFiles = [];
+    this.unProcessed = [];
+    this.processed = [];
+    this.latestPrefix = 0;
+    this.loadingSpinner = new Spinner(
+      clc.cyan("Watching for file changes..."),
+    ).setSpinnerString(25); // スピナーの種類は25とする。
 
     // Welcomeメッセージ
     console.clear();
@@ -60,18 +104,19 @@ class Main {
     this.main();
   }
 
-  // メイン
+  /**
+   * メインの関数。await構文を使うためconstructorから切り離してある
+   */
   async main() {
     // 作業ディレクトリが正しいか確認
-    const setup = await yesno({
+    const confirm = await yesno({
       question: `Before begin, Is the detected working directory correct?\nIf not, your files can accidentaly get renamed. (${clc.green(
         `${clc.bold.underline("yes")} / no`,
       )})`,
       defaultValue: true,
     });
 
-    // プロンプトが拒否されたらプログラムを終了
-    if (!setup) {
+    if (!confirm) {
       console.log(
         "\nMake sure to run this program from inside your desired folder",
       );
@@ -79,15 +124,14 @@ class Main {
     }
     console.log();
 
-    // 更新間隔ごとにループ
+    // 確認間隔ごとにループ
     // eslint-disable-next-line no-unused-vars
     for await (const i of setInterval(this.updateRate)) {
       // スピナーを回す
-      if (!this.spinner.isSpinning()) {
-        this.spinner.start();
+      if (!this.loadingSpinner.isSpinning()) {
+        this.loadingSpinner.start();
       }
 
-      // メインのループを開始する。ファイルがビジー状態でリネームできなかった場合は例外をキャッチしてスキップ
       try {
         this.loop();
       } catch (e) {
@@ -100,19 +144,18 @@ class Main {
   loop() {
     let newPrefix;
 
-    this.updateFileInfo(); // ファイル一覧を分析する
-    newPrefix = this.latestPrefix + 1; // 最新の通し番号を1つ増やす
+    this.updateFileInfo();
+    newPrefix = this.latestPrefix + 1;
 
     if (this.unProcessed.length == 0) {
-      // 未処理のファイルが存在しなかったらこのループは終了
       return;
     }
-    // 未処理のファイルが1つでもあったらここから
-    this.spinner.stop(); // スピナーを停止
+
+    // ファイル処理ここから
+    this.loadingSpinner.stop();
     console.log(); // 空行
 
     for (const oldName of this.unProcessed) {
-      // 未処理のファイルを1つずつ処理
       const newName = ("000" + newPrefix).slice(-3) + "_" + oldName;
 
       fs.renameSync(
@@ -130,19 +173,18 @@ class Main {
    * 作業ディレクトリのファイル情報を更新
    */
   updateFileInfo(): void {
-    // ファイルのリスト
     this.targetFiles = fs
       .readdirSync(this.workDir, { withFileTypes: true })
-      // 無視すべきファイルやフォルダを削除
       .filter((dirent) => {
+        // 無視すべきファイルやフォルダを削除
         return dirent.isFile() && !this.shouldIgnore(dirent.name);
       })
-      // ファイル名の配列を生成
       .map((dirent) => {
+        // ファイル名の配列を生成
         return dirent.name;
       })
-      // ファイルの更新日が古い順に並び替え
       .sort((a, b) => {
+        // ファイルの更新日が古い順に並び替え
         const mtimeA = fs.statSync(path.resolve(this.workDir, a)).mtime;
         const mtimeB = fs.statSync(path.resolve(this.workDir, b)).mtime;
         if (mtimeA > mtimeB) {
@@ -154,19 +196,16 @@ class Main {
         }
       });
 
-    // 添え字がついてないやつのリスト
     this.unProcessed = this.targetFiles.filter((value) => {
       return !this.regEx.test(value);
     });
 
-    // 添え字がついてるやつのリスト
     this.processed = this.targetFiles
       .filter((value) => {
         return this.regEx.test(value);
       })
       .sort();
 
-    // 一番新しい添え字
     this.latestPrefix =
       this.processed.length != 0
         ? parseInt(this.processed[this.processed.length - 1].slice(0, 3))
@@ -179,7 +218,6 @@ class Main {
    * @returns true: 無視すべき, false: 含めるべき
    */
   shouldIgnore(fileName: string) {
-    // 無視すべきファイルのときはtrueを返す。orでつなぐ
     return (
       fileName == this.selfName || // Prefixer自体の実行ファイルは対象外
       fileName == ".DS_Store" // macOSの.DS_Storeファイルは対象外
