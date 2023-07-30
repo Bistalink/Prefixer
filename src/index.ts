@@ -80,7 +80,7 @@ class Main {
     console.log();
 
     // 更新間隔ごとにループ
-    for await (const i of setInterval(this.updateRate)) {   // eslint-disable-line
+    for await (const i of setInterval(this.updateRate)) {   
       // スピナーを回す
       if (!this.spinner.isSpinning()) {
         this.spinner.start();
