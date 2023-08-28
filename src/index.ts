@@ -24,7 +24,7 @@ class Main{
     private fileList: string[] = [];
     private unProcessed: string[] = [];
     private processed: string[] = [];
-    private latestPrefix: number  = 0;
+    private latestPrefix: number = 0;
     private spinner = new Spinner(clc.cyan("Watching for file changes..."));    // ファイル変更監視中のスピナー
 
 
@@ -76,18 +76,18 @@ class Main{
 
     // メインのループ
     loop(){
-        let newPrefix;
+        let newPrefix: number;
 
         this.analyzeFiles();                        // ファイル一覧を分析する
         newPrefix = this.latestPrefix + 1;          // 最新の通し番号を1つ増やす
-        if (this.unProcessed.length == 0){          // 未処理のファイルが存在しなかったらこのループは終了
+        if (this.unProcessed.length === 0){          // 未処理のファイルが存在しなかったらこのループは終了
             return;
         }
                                                     // 未処理のファイルが1つでもあったらここから
         this.spinner.stop();                        // スピナーを停止
         console.log();                              // 空行
         for (const oldName of this.unProcessed){    // 未処理のファイルを1つずつ処理
-            const newName = ("000" + newPrefix).slice(-3) + "_" +oldName;
+            const newName = ("000" + newPrefix.toString()).slice(-3) + "_" + oldName;
             
             fs.renameSync(path.resolve(this.workDir, oldName), path.resolve(this.workDir, newName));
             console.log(`${oldName}\t>>\t${clc.greenBright(newName)}`);
@@ -112,7 +112,7 @@ class Main{
                 return 0;
         });
         // 添え字がついてないやつのリスト
-        this.unProcessed = this.fileList.filter((value)=>{
+        this.unProcessed = this.fileList.filter(value=>{
             return !this.regEx.test(value);
         });
         // 添え字がついてるやつのリスト
@@ -120,14 +120,14 @@ class Main{
             return this.regEx.test(value);
         }).sort();
         // 一番新しい添え字
-        this.latestPrefix = (this.processed.length != 0) ? (parseInt(this.processed[this.processed.length - 1].slice(0, 3))) : -1;
+        this.latestPrefix = this.processed.length !== 0 ? parseInt(this.processed[this.processed.length - 1].slice(0, 3)) : -1;
     }
 
     // ファイルのリストを取得するやつ（フォルダには反応しないやつ）
     getFileList(filePath: string): string[]{
         // 対象がファイルでかつ実行可能ファイルでない場合
         return fs.readdirSync(filePath, {withFileTypes: true}).filter(dirent =>{
-            return dirent.isFile() && dirent.name != this.execName;
+            return dirent.isFile() && dirent.name !== this.execName;
         }).map(dirent => {
             return dirent.name;
         })
