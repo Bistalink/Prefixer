@@ -4,10 +4,14 @@
   "description": "Auto prefix adder for files",
   "main": "dist/index.js",
   "scripts": {
-    "build": "esbuild src/index.ts --bundle --outfile=dist/index.js --platform=node",
+    "build": "esbuild src/index.ts --bundle --minify --outfile=dist/index.js --platform=node",
     "test": "run-p clean && run-p build && cross-env NODE_ENV=development node .",
     "clean": "rimraf dist && rimraf release",
-    "package": "run-p clean && cross-env NODE_ENV=production run-p build && pkg -t node18-win,node18-macos -o release/Prefixer dist/index.js"
+    "package": "run-p clean && cross-env NODE_ENV=production run-p build && pkg -t node18-win,node18-macos -o release/Prefixer dist/index.js",
+    "lint": "eslint . --ext .ts",
+    "prettier": "prettier --write src",
+    "fix": "run-p prettier && run-p lint",
+    "prepare": "husky install"
   },
   "author": "bistalink",
   "license": "MIT",
@@ -15,11 +19,16 @@
     "@types/cli-color": "^2.0.2",
     "@types/cli-spinner": "^0.2.1",
     "@types/node": "^20.4.5",
+    "@types/node-emoji": "^2.1.0",
+    "@typescript-eslint/parser": "^6.2.0",
     "cross-env": "^7.0.3",
     "esbuild": "^0.18.14",
-    "node-emoji": "^2.1.0",
+    "eslint": "^8.46.0",
+    "eslint-config-prettier": "^8.9.0",
+    "husky": "^8.0.3",
     "npm-run-all": "^4.1.5",
     "pkg": "^5.8.1",
+    "prettier": "^3.0.3",
     "rimraf": "^5.0.1",
     "typescript": "^5.1.6"
   },
@@ -27,5 +36,10 @@
     "cli-color": "^2.0.3",
     "cli-spinner": "^0.2.10",
     "yesno": "^0.4.0"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run fix"
+    }
   }
 }
