@@ -1,6 +1,6 @@
 {
   "name": "prefixer",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Auto prefix adder for files",
   "main": "dist/index.js",
   "scripts": {
